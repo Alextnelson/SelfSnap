@@ -50,6 +50,13 @@ class PhotoMetaDataTableViewController: UITableViewController {
     fileprivate var locationManager: LocationManager!
     fileprivate var location: CLLocation!
 
+    fileprivate lazy var tagsTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "fall, baseball, vacation"
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
+
     lazy var imageViewHeight: CGFloat = {
         let imageFactor = self.photoImageView.frame.size.height / self.photoImageView.frame.size.width
         let screenWidth = UIScreen.main.bounds.size.width
@@ -59,11 +66,8 @@ class PhotoMetaDataTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        let saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(PhotoMetaDataTableViewController.savePhotoWithMetaData))
+        navigationItem.rightBarButtonItem = saveButton
     }
 
 
@@ -108,11 +112,41 @@ extension PhotoMetaDataTableViewController {
                 activityIndicator.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
                 activityIndicator.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor, constant: 20.0)
                 ])
+        case (2, 0): cell.contentView.addSubview(tagsTextField)
+
+        NSLayoutConstraint.activate([
+            tagsTextField.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
+            tagsTextField.rightAnchor.constraint(equalTo: cell.contentView.rightAnchor, constant: 16.0),
+            tagsTextField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
+            tagsTextField.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor, constant: 20.0)
+            ])
         default:
             break
         }
 
         return cell
+    }
+}
+
+// MARK: Helper methods
+
+extension PhotoMetaDataTableViewController {
+    func tagsFromTextField() -> [String] {
+        guard let tags = tagsTextField.text else {
+            return []
+        }
+        let commaSeparatedSubSequences = tags.characters.split { $0 == "," }
+        let commaSeparatedStrings = commaSeparatedSubSequences.map(String.init)
+        let lowercaseTags = commaSeparatedStrings.map { $0.lowercased() }
+        return lowercaseTags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+    }
+}
+
+// MARK: Persistence
+
+extension PhotoMetaDataTableViewController {
+    @objc func savePhotoWithMetaData() {
+        //
     }
 }
 
@@ -150,4 +184,17 @@ extension PhotoMetaDataTableViewController {
             break
         }
     }
+
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        switch section {
+        case 0:
+            return "Photo"
+        case 1: return "Enter a location"
+        case 2: return "Enter tags"
+        default:
+            return nil
+
+        }
+    }
 }
+
