@@ -27,18 +27,47 @@ class PhotoListController: UIViewController {
         return manager
     }()
 
+    lazy var dataSource: PhotoDataSource = {
+        return PhotoDataSource(fetchRequest: Photo.allPhotosRequest, collectionView: self.collectionView)
+    }()
+
+    lazy var collectionView: UICollectionView = {
+        let collectionViewLayout = UICollectionViewFlowLayout()
+
+        let screenWidth = UIScreen.main.bounds.size.width
+        let paddingDistance: CGFloat = 16.0
+        let itemSize = (screenWidth - paddingDistance)/2.0
+
+        collectionViewLayout.itemSize = CGSize(width: itemSize, height: itemSize)
+
+        let collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: collectionViewLayout)
+        collectionView.backgroundColor = UIColor.white
+        collectionView.register(PhotoCollectionViewCell.self, forCellWithReuseIdentifier: PhotoCollectionViewCell.reuseIdentifier)
+        
+        return collectionView
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+
+        collectionView.dataSource = dataSource
+
     }
 
     override func viewWillLayoutSubviews() {
         // Camera Button Layout
 
+        view.addSubview(collectionView)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+
         view.addSubview(cameraButton)
         cameraButton.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
+            collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            collectionView.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor),
+            collectionView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             cameraButton.leftAnchor.constraint(equalTo: view.leftAnchor),
             cameraButton.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             cameraButton.rightAnchor.constraint(equalTo: view.rightAnchor),
